@@ -6,6 +6,7 @@ from openai import OpenAI
 load_dotenv()
 
 ai_client = OpenAI()
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Load conversation flow for system prompt
 with open("backend/conversation_flow.json", "r") as f:

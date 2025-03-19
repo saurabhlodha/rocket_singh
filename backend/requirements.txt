@@ -5,3 +5,7 @@ openai
 pydantic
 sqlalchemy
 python-multipart
+streamlit
+requests
+psycopg2-binary
+alembic
