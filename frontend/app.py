@@ -19,17 +19,6 @@ if 'messages' not in st.session_state:
 
 st.title("Sorpetaler Sales Assistant")
 
-# Display chat messages
-# for message in st.session_state.messages:
-#     with st.container():
-#         if message["role"] == "user":
-#             st.write(f"You: {message['content']}")
-#         else:
-#             st.write(f"Assistant: {message['content']}")
-# for message in st.session_state.messages:
-#     with st.chat_message(message["role"]):
-#         st.markdown(message["content"])
-
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
