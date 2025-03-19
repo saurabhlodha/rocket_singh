@@ -1,6 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 import models
-from database import engine
+from database import engine, get_db
+from models import Conversation, Message, Order
+from sqlalchemy.orm import Session
 from config import ai_client, SYS_PROMPT, CONVERSATION_FLOW
 from pydantic import BaseModel
 from typing import List, Dict, Optional
@@ -33,14 +35,22 @@ class CustomPrompt(BaseModel):
 
 
 @app.post("/api/chat")
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, db: Session = Depends(get_db)):
     try:
+        # Get or create conversation
+        if request.conversation_id:
+            conversation = db.query(Conversation).filter(Conversation.id == request.conversation_id).first()
+            if not conversation:
+                raise HTTPException(status_code=404, detail="Conversation not found")
+        else:
+            conversation = Conversation()
+            db.add(conversation)
+            db.commit()
+            db.refresh(conversation)
+
         # Create messages array with system prompt
         messages = [{"role": "system", "content": system_prompt_with_workflow}]
-
-        # Add conversation history
-        messages.extend([{"role": msg.role, "content": msg.content} 
-                        for msg in request.messages])
+        messages.extend([{"role": msg.role, "content": msg.content} for msg in request.messages])
 
         # Get response from OpenAI
         response = ai_client.chat.completions.create(
@@ -50,9 +60,26 @@ async def chat(request: ChatRequest):
             max_tokens=500
         )
 
+        # Save the new messages to the database
+        new_message = Message(
+            conversation_id=conversation.id,
+            content=request.messages[-1].content,
+            role="user"
+        )
+        db.add(new_message)
+
+        assistant_message = Message(
+            conversation_id=conversation.id,
+            content=response.choices[0].message.content,
+            role="assistant"
+        )
+        db.add(assistant_message)
+        db.commit()
+
         return {
             "content": response.choices[0].message.content,
-            "role": "assistant"
+            "role": "assistant",
+            "conversation_id": conversation.id
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
