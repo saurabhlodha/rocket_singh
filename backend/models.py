@@ -1,6 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Dict
-
+from typing import List, Optional
+from datetime import datetime
 
 class Message(BaseModel):
     content: str
@@ -8,3 +8,7 @@ class Message(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: List[Message]
+
+class CustomPrompt(BaseModel):
+    content: str
+    timestamp: Optional[datetime] = None

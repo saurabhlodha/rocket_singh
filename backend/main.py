@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from .config import ai_client, SYS_PROMPT, CONVERSATION_FLOW
-from .models import Message, ChatRequest
+from config import ai_client, SYS_PROMPT, CONVERSATION_FLOW
+from models import CustomPrompt, ChatRequest
 import json
 
 app = FastAPI()
