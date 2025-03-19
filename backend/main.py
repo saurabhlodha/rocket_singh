@@ -1,10 +1,36 @@
 from fastapi import FastAPI, HTTPException
+import models
+from database import engine
 from config import ai_client, SYS_PROMPT, CONVERSATION_FLOW
-from models import CustomPrompt, ChatRequest
+from pydantic import BaseModel
+from typing import List, Dict, Optional
+from datetime import datetime
 import json
 
 app = FastAPI()
+models.Base.metadata.create_all(bind=engine)
+
 system_prompt_with_workflow = SYS_PROMPT + json.dumps(CONVERSATION_FLOW, indent=2)
+
+class MessageBase(BaseModel):
+    content: str
+    role: str
+
+class ChatRequest(BaseModel):
+    conversation_id: Optional[int]
+    messages: List[MessageBase]
+
+
+class ConversationResponse(BaseModel):
+    id: int
+    started_at: datetime
+    status: str
+    messages: List[Dict]
+
+class CustomPrompt(BaseModel):
+    content: str
+    timestamp: Optional[datetime] = None
+
 
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
