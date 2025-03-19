@@ -1,0 +1,38 @@
+{
+  "flow": [
+    {
+      "id": "1_greeting",
+      "description": "Greet customer and understand request",
+      "options": ["New order", "Existing order", "General question"],
+      "next": "2_collect_customer_info"
+    },
+    {
+      "id": "2_collect_customer_info",
+      "description": "Get name, address, email",
+      "next": "3_select_order_type"
+    },
+    {
+      "id": "3_select_order_type",
+      "description": "Wood or Wood-Aluminium",
+      "next": "wood_flow"
+    },
+    {
+      "id": "wood_flow",
+      "sequence": [
+        {"id": "wood_material", "options": ["Pine", "Oak", "Red Grandis", "Meranti"]},
+        {"id": "window_system", "options": ["TF Classic", "TF Reno", "TF Gracil"]},
+        {"id": "profile_thickness", "options": ["68mm", "78mm", "90mm"]},
+        {"id": "glass_type", "options": ["Double Glazing", "Triple Glazing"]},
+        {"id": "security_level", "options": ["Grundsicherheit", "Sicherheitsstufe 1-3", "RC1", "RC2"]},
+        {"id": "colour", "options": ["RAL 9016", "RAL 7016", "RAL 7039", "RAL 6009", "RAL 7005"]},
+        {"id": "rain_rail", "options": ["White", "Silver (F1)", "Dark (UC5)"]},
+        {"id": "sealing", "options": ["White", "Gray", "Oak", "Brown", "Black"]},
+        {"id": "fitting", "options": ["White", "Silver (F1)"]},
+        {"id": "handle", "options": ["White", "Silver", "Black"]},
+        {"id": "sill", "options": ["ohne (kantig)", "Außen", "Unten", "Innen"]},
+        {"id": "rfl", "options": ["Yes", "No"]}
+      ],
+      "next": "confirmation"
+    }
+  ]
+}
