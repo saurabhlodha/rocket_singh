@@ -2,14 +2,24 @@ from fastapi import APIRouter, HTTPException, Depends
 from database import get_db
 from models import Conversation
 from sqlalchemy.orm import Session
-from models import Conversation, Message
+from models import Conversation, Message, SystemPrompt
 from config import ai_client
 from validations import ChatRequest
 from config import SYS_PROMPT, CONVERSATION_FLOW, OPENAI_MODEL
+from seed import create_system_prompt
 import json
 
 router = APIRouter()
-system_prompt_with_workflow = SYS_PROMPT + json.dumps(CONVERSATION_FLOW, indent=2)
+
+def system_prompt_with_workflow(db: Session) -> str:
+    system_prompt = create_system_prompt(db=db, name='system_prompt', default_content=SYS_PROMPT).content
+    conversation_flow = create_system_prompt(db=db, name='conversation_flow', default_content=CONVERSATION_FLOW).content
+
+    return system_prompt + json.dumps(conversation_flow, indent=2)
+
+def get_or_create_config(db: Session, name: str) -> SystemPrompt:
+    config = db.query(SystemPrompt).filter(SystemPrompt.name == name).first()
+    return config
 
 @router.post("/api/chat")
 async def chat(request: ChatRequest, db: Session = Depends(get_db)):
@@ -26,7 +36,7 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
             db.refresh(conversation)
 
         # Create messages array with system prompt
-        messages = [{"role": "system", "content": system_prompt_with_workflow}]
+        messages = [{"role": "system", "content": system_prompt_with_workflow(db)}]
         messages.extend([{"role": msg.role, "content": msg.content} for msg in request.messages])
 
         # Get response from OpenAI
