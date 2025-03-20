@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Text, Any
 from datetime import datetime
 
 class MessageBase(BaseModel):
@@ -16,7 +16,5 @@ class ConversationResponse(BaseModel):
     status: str
     messages: List[Dict]
 
-class CustomPrompt(BaseModel):
-    content: str
-    timestamp: Optional[datetime] = None
-
+class SystemPromptUpdate(BaseModel):
+    content: Any
