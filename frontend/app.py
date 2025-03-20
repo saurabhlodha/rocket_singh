@@ -1,63 +1,28 @@
 import streamlit as st
-import requests
-import json
-from datetime import datetime
+from helper import show_chat_interface, show_conversation_list
 
 st.set_page_config(
     page_title="Sorpetaler Sales Assistant",
     layout="wide"
 )
 
-# Initialize session state for messages if not exists
+# Initialize session state
 if 'messages' not in st.session_state:
-    st.session_state.messages = [{
-        "id": "1",
-        "content": "Hello! I'm your Sorpetaler Fensterbau sales assistant. How can I help you today?",
-        "role": "assistant",
-        "timestamp": str(datetime.now())
-    }]
+    st.session_state.messages = []
+if 'conversation_id' not in st.session_state:
+    st.session_state.conversation_id = None
+if 'view' not in st.session_state:
+    st.session_state.view = 'chat'  # chat, list, or detail
 
-st.title("Sorpetaler Sales Assistant")
+# Navigation
+col1, col2 = st.columns([1, 9])
+with col1:
+    if st.button("📝 Chat" if st.session_state.view != 'chat' else "📋 List"):
+        st.session_state.view = 'list' if st.session_state.view == 'chat' else 'chat'
+        st.rerun()
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Chat input
-if user_input := st.chat_input("Type your message:", key="user_input"):
-    # Add user message to chat
-    user_message = {
-        "id": str(datetime.now().timestamp()),
-        "content": user_input,
-        "role": "user",
-        "timestamp": str(datetime.now())
-    }
-    st.session_state.messages.append(user_message)
-
-    try:
-        # Send request to backend
-        response = requests.post(
-            "http://localhost:8000/api/chat",
-            json={
-                "messages": [
-                    {"content": msg["content"], "role": msg["role"]}
-                    for msg in st.session_state.messages
-                ]
-            }
-        )
-
-        if response.status_code == 200:
-            assistant_response = response.json()
-            # Add assistant response to chat
-            assistant_message = {
-                "id": str(datetime.now().timestamp()),
-                "content": assistant_response["content"],
-                "role": "assistant",
-                "timestamp": str(datetime.now())
-            }
-            st.session_state.messages.append(assistant_message)
-            st.rerun()
-        else:
-            st.error("Failed to get response from the assistant")
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
+# Show the appropriate view
+if st.session_state.view == 'chat':
+    show_chat_interface()
+else:
+    show_conversation_list()
