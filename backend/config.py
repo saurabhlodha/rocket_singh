@@ -8,6 +8,7 @@ load_dotenv()
 ai_client = OpenAI()
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 OPENAI_MODEL = "gpt-4o-mini"
+
 # Load conversation flow for system prompt
 with open("backend/conversation_flow.json", "r") as f:
     CONVERSATION_FLOW = json.load(f)

@@ -17,10 +17,6 @@ def system_prompt_with_workflow(db: Session) -> str:
 
     return system_prompt + json.dumps(conversation_flow, indent=2)
 
-def get_or_create_config(db: Session, name: str) -> SystemPrompt:
-    config = db.query(SystemPrompt).filter(SystemPrompt.name == name).first()
-    return config
-
 @router.post("/api/chat")
 async def chat(request: ChatRequest, db: Session = Depends(get_db)):
     try:

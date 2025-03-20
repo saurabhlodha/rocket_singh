@@ -17,4 +17,4 @@ class ConversationResponse(BaseModel):
     messages: List[Dict]
 
 class SystemPromptUpdate(BaseModel):
-    content: Any
+    content: Text | Dict

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 import models
 from database import engine
 from routers import conversations, chat, prompt
