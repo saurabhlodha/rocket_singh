@@ -23,6 +23,14 @@ class Message(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     conversation = relationship("Conversation", back_populates="messages")
 
+class SystemPrompt(Base):
+    __tablename__ = "system_prompt"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True)  # system_prompt, conversation_flow
+    content = Column(JSON)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class Order(Base):
     __tablename__ = "orders"
 
