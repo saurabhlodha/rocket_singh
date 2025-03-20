@@ -7,10 +7,12 @@ from config import ai_client, SYS_PROMPT, CONVERSATION_FLOW
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 from datetime import datetime
+from routers import conversations
 import json
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
+app.include_router(conversations.router)
 
 system_prompt_with_workflow = SYS_PROMPT + json.dumps(CONVERSATION_FLOW, indent=2)
 
