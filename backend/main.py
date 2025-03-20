@@ -3,7 +3,7 @@ import models
 from database import engine, get_db
 from models import Conversation, Message, Order
 from sqlalchemy.orm import Session
-from config import ai_client, SYS_PROMPT, CONVERSATION_FLOW
+from config import ai_client, SYS_PROMPT, CONVERSATION_FLOW, OPENAI_MODEL
 from pydantic import BaseModel
 from typing import List, Dict, Optional
 from datetime import datetime
@@ -56,7 +56,7 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
 
         # Get response from OpenAI
         response = ai_client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=OPENAI_MODEL,
             messages=messages,
             temperature=0.7,
             max_tokens=500
