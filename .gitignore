@@ -27,3 +27,4 @@ dist-ssr
 .env
 .idea/
 backend/__pycache__/
+backend/routers/__pycache__/
