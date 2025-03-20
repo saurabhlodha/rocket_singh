@@ -100,3 +100,67 @@ def show_conversation_list():
                 st.divider()
     except Exception as e:
         st.error(f"Error loading conversations: {str(e)}")
+
+def show_settings():
+    st.title("System Settings")
+
+    try:
+        # Load system prompt
+        response = requests.get("http://localhost:8000/api/prompts/system_prompt")
+        if response.status_code == 200:
+            system_prompt = response.json()
+            st.header("System Prompt")
+
+            prompt_str = st.text_area(
+                "System Prompt Text",
+                value=system_prompt["content"],
+                height=400
+            )
+
+            if st.button("Update System Prompt"):
+                updated_prompt = {
+                    "content": prompt_str
+                }
+
+                response = requests.put(
+                    "http://localhost:8000/api/prompts/system_prompt",
+                    json=updated_prompt
+                )
+
+                if response.status_code == 200:
+                    st.success("System prompt updated successfully!")
+                else:
+                    st.error("Failed to update system prompt")
+
+        # Load conversation flow
+        response = requests.get("http://localhost:8000/api/prompts/conversation_flow")
+        if response.status_code == 200:
+            conversation_flow = response.json()
+
+            st.header("Conversation Flow")
+            flow_json = st.text_area(
+                "Conversation Flow (JSON)",
+                value=json.dumps(conversation_flow["content"], indent=2),
+                height=400
+            )
+
+            if st.button("Update Conversation Flow"):
+                try:
+                    updated_flow = {
+                        "content": json.loads(flow_json)
+                    }
+
+                    response = requests.put(
+                        "http://localhost:8000/api/prompts/conversation_flow",
+                        json=updated_flow
+                    )
+
+                    if response.status_code == 200:
+                        st.success("Conversation flow updated successfully!")
+                    else:
+                        st.error("Failed to update conversation flow")
+                except json.JSONDecodeError:
+                    st.error("Invalid JSON format")
+
+    except Exception as e:
+        st.error(f"Error loading settings: {str(e)}")
