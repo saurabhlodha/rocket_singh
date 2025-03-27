@@ -1,5 +1,5 @@
 import streamlit as st
-from helper import show_chat_interface, show_conversation_list, show_settings, create_new_project
+from helper import show_chat_interface, show_conversation_list, show_settings, create_new_project, display_company_name
 import os
 
 st.set_page_config(
@@ -61,7 +61,7 @@ if st.session_state.view == 'projects':
         for project in projects:
             col1, col2 = st.columns([4, 1])
             with col1:
-                st.write(project)
+                st.write(display_company_name(project))
             with col2:
                 if st.button("Open", key=f"open_{project}"):
                     st.session_state.current_project = project

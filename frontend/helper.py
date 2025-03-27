@@ -1,7 +1,49 @@
 import streamlit as st
 import requests
 import json
+import os
+import shutil
 from datetime import datetime
+import subprocess
+
+def create_new_project(project_name):
+    try:
+        # Create project directory structure
+        project_dir = f"projects/{project_name}"
+        os.makedirs(project_dir, exist_ok=True)
+        os.makedirs(f"{project_dir}/backend", exist_ok=True)
+        os.makedirs(f"{project_dir}/frontend", exist_ok=True)
+
+        # Copy template files
+        template_files = {
+            "../backend/main.py": "backend/main.py",
+            "../backend/models.py": "backend/models.py",
+            "../backend/database.py": "backend/database.py",
+            "../backend/requirements.txt": "backend/requirements.txt",
+            "../frontend/app.py": "frontend/app.py",
+            "../frontend/helper.py": "frontend/helper.py"
+        }
+
+        for src, dest in template_files.items():
+            shutil.copy2(src, f"{project_dir}/{dest}")
+
+        # Create .env file with project-specific database
+        env_content = f"""OPENAI_API_KEY=your_openai_api_key
+DATABASE_URL=postgresql://postgres:postgres@localhost/{project_name}
+LANGCHAIN_API_KEY=your_langsmith_api_key
+LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
+LANGCHAIN_PROJECT={project_name}_sales_assistant"""
+
+        with open(f"{project_dir}/.env", "w") as f:
+            f.write(env_content)
+
+        # Create database
+        subprocess.run(["createdb", project_name])
+
+        return True
+    except Exception as e:
+        st.error(f"Error creating project: {str(e)}")
+        return False
 
 def load_conversation(conversation_id):
     response = requests.get(f"http://localhost:8000/api/conversations/{conversation_id}")
@@ -19,8 +61,16 @@ def load_conversation(conversation_id):
         st.session_state.conversation_id = conversation_id
         st.session_state.view = 'chat'
 
+def display_company_name(snake_string):
+    components = snake_string.split('_')
+    return ' '.join(x.capitalize() for x in components)
+
 def show_chat_interface():
-    st.title("Sorpetaler Sales Assistant")
+    if not st.session_state.current_project:
+        st.error("No project selected")
+        return
+
+    st.title(display_company_name(st.session_state.current_project) + " - Sales Assistant")
 
     # Display chat messages
     for message in st.session_state.messages:
@@ -47,7 +97,7 @@ def show_chat_interface():
             try:
                 # Send request to backend
                 response = requests.post(
-                    "http://localhost:8000/api/chat",
+                    f"http://localhost:8001/api/chat",  # Note: Each project runs on a different port
                     json={
                         "conversation_id": st.session_state.conversation_id,
                         "messages": [
@@ -75,7 +125,11 @@ def show_chat_interface():
                 st.error(f"Error: {str(e)}")
 
 def show_conversation_list():
-    st.title("Conversations")
+    if not st.session_state.current_project:
+        st.error("No project selected")
+        return
+
+    st.title(f"{st.session_state.current_project} - Conversations")
     
     if st.button("New Conversation"):
         st.session_state.messages = []
@@ -84,7 +138,7 @@ def show_conversation_list():
         st.rerun()
 
     try:
-        response = requests.get("http://localhost:8000/api/conversations")
+        response = requests.get(f"http://localhost:8001/api/conversations")
         if response.status_code == 200:
             conversations = response.json()
             for conv in conversations:
@@ -102,11 +156,15 @@ def show_conversation_list():
         st.error(f"Error loading conversations: {str(e)}")
 
 def show_settings():
-    st.title("System Settings")
+    if not st.session_state.current_project:
+        st.error("No project selected")
+        return
+
+    st.title(f"{st.session_state.current_project} - System Settings")
 
     try:
         # Load system prompt
-        response = requests.get("http://localhost:8000/api/prompts/system_prompt")
+        response = requests.get(f"http://localhost:8001/api/prompts/system_prompt")
         if response.status_code == 200:
             system_prompt = response.json()
             st.header("System Prompt")
@@ -123,7 +181,7 @@ def show_settings():
                 }
 
                 response = requests.put(
-                    "http://localhost:8000/api/prompts/system_prompt",
+                    f"http://localhost:8001/api/prompts/system_prompt",
                     json=updated_prompt
                 )
 
@@ -133,7 +191,7 @@ def show_settings():
                     st.error("Failed to update system prompt")
 
         # Load conversation flow
-        response = requests.get("http://localhost:8000/api/prompts/conversation_flow")
+        response = requests.get(f"http://localhost:8001/api/prompts/conversation_flow")
         if response.status_code == 200:
             conversation_flow = response.json()
 
@@ -151,7 +209,7 @@ def show_settings():
                     }
 
                     response = requests.put(
-                        "http://localhost:8000/api/prompts/conversation_flow",
+                        f"http://localhost:8001/api/prompts/conversation_flow",
                         json=updated_flow
                     )
 
