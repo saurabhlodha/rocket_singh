@@ -27,3 +27,5 @@ dist-ssr
 .env
 .idea/
 **/__pycache__/
+projects/*
+frontend/projects/*
