@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from database import get_db
 from models import Conversation
 from sqlalchemy.orm import Session
-from models import Conversation, Message, SystemPrompt
+from models import Conversation, Message
 from config import ai_client
 from validations import ChatRequest
 from config import SYS_PROMPT, CONVERSATION_FLOW, OPENAI_MODEL
